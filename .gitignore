@@ -1,0 +1,65 @@
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Entity Framework Core
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# SQL Server files
+*.bak
+*.bak1
+*.bak2
+*.bak3
+*.bak4
+*.bak5
+*.bak6
+*.bak7
+*.bak8
+*.bak9
+*.ldf
+*.mdf
+*.ndf
+
+# Entity Framework Migrations
+Migrations/
+
+# Otros archivos temporales
+bin/
+obj/
+temp/
+
+# Archivos de prueba
+**/*.Tests.dll
+**/*.Tests.pdb
+
+# Archivos de documentación
+doc/
+
+# Archivos de configuración de Visual Studio
+*.vspscc
+*.vssscc
+
+# Archivos de configuración de NuGet
+*.nuget.config
+*.nuget.exe
+*.nupkg
+
+# Archivos de configuración de Bower
+bower_components/
+
+# Archivos de configuración de Grunt
+node_modules/
+
+# Archivos de configuración de Gulp
+gulpfile.js
