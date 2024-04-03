@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using mla.projectSchool.Data;
 using mla.projectSchool.Models;
+using projectSchool.Services;
 
 namespace projectSchool.Controllers
 {
@@ -14,170 +11,82 @@ namespace projectSchool.Controllers
     [ApiController]
     public class StudentCourseController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly StudentCourseService _studentCourseService;
 
-        public StudentCourseController(DataContext context)
+        public StudentCourseController(StudentCourseService studentCourseService)
         {
-            _context = context;
+            _studentCourseService = studentCourseService;
         }
 
         // GET: api/StudentCourse
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StudentCourse>>> GetStudentCourse()
         {
-            return await _context.StudentCourse.ToListAsync();
+            return await _studentCourseService.GetAllStudentCourses();
         }
 
         // GET: api/StudentCourse/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<StudentCourse>> GetStudentCourse(string id)
+        [HttpGet("{studentDNI}/{courseTitle}")]
+        public async Task<ActionResult<StudentCourse>> GetStudentCourse(string studentDNI, string courseTitle)
         {
-            var studentCourse = await _context.StudentCourse.FindAsync(id);
-
-            if (studentCourse == null)
+            try
             {
-                return NotFound();
-            }
+                var studentCourse = await _studentCourseService.GetStudentCourseById(studentDNI, courseTitle);
+                if (studentCourse == null)
+                {
+                    return NotFound();
+                }
 
-            return studentCourse;
+                return studentCourse;
+            }
+            catch (Exception ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
-        // GET: api/StudentCourse/GetStudentCourses
         [HttpGet("GetStudentCourses")]
         public async Task<ActionResult<IEnumerable<StudentCourse>>> GetStudentCourses()
         {
-            // Incluir datos relacionados al recuperar StudentCourses
-            var studentCourses = await _context.StudentCourse
-                .Include(sc => sc.Student)
-                .Include(sc => sc.Course)
-                .ToListAsync();
-
-            return studentCourses;
+            try
+            {
+                var studentCourses = await _studentCourseService.GetStudentCoursesIncludingRelations();
+                return Ok(studentCourses);
+            }
+            catch (Exception ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         // POST: api/StudentCourse/AddCourseToStudent
         [HttpPost("AddCourseToStudent")]
-        public async Task<ActionResult<StudentCourse>> AddStudentCourse([FromBody] StudentCourse request)
+        public async Task<ActionResult<StudentCourse>> AddStudentCourse(StudentCourse studentCourse)
         {
-            // 1. Load existing Student and Course entities
-            var student = await _context.Student.FindAsync(request.StudentDNI);
-            var course = await _context.Course.FindAsync(request.CourseTitle);
-
-            if (student == null || course == null)
-            {
-                return NotFound("Student or Course not found.");
-            }
-
-            // 2. Check for existing enrollment
-            var existingStudentCourse = await _context.StudentCourse
-                .FirstOrDefaultAsync(sc => sc.StudentDNI == request.StudentDNI && sc.CourseTitle == request.CourseTitle);
-
-            if (existingStudentCourse != null)
-            {
-                return Conflict("Student already enrolled in the course.");
-            }
-
-            // 3. Create StudentCourse entity and set relationships
-            var studentCourse = new StudentCourse
-            {
-                StudentDNI = request.StudentDNI,
-                CourseTitle = request.CourseTitle,
-                Student = student,
-                Course = course
-            };
-
-            _context.StudentCourse.Add(studentCourse);
-
             try
             {
-                await _context.SaveChangesAsync();
+                var result = await _studentCourseService.AddStudentCourse(studentCourse);
+                return CreatedAtAction("GetStudentCourse", new { studentDNI = studentCourse.StudentDNI, courseTitle = studentCourse.CourseTitle }, studentCourse);
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
-                // Handle database-related errors
-                throw; // Rethrow for appropriate handling in a higher layer
+                return Conflict(ex.Message);
             }
-
-            return CreatedAtAction("GetStudentCourse", new { id = request.StudentDNI }, studentCourse);
-        }
-
-
-
-        // PUT: api/StudentCourse/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutStudentCourse(string id, StudentCourse studentCourse)
-        {
-            if (id != studentCourse.StudentDNI)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(studentCourse).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!StudentCourseExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/StudentCourse
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<StudentCourse>> PostStudentCourse(StudentCourse studentCourse)
-        {
-            _context.StudentCourse.Add(studentCourse);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (StudentCourseExists(studentCourse.StudentDNI))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetStudentCourse", new { id = studentCourse.StudentDNI }, studentCourse);
         }
 
         // DELETE: api/StudentCourse/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStudentCourse(string id)
+        [HttpDelete("{studentDNI}/{courseTitle}")]
+        public async Task<IActionResult> DeleteStudentCourse(string studentDNI, string courseTitle)
         {
-            var studentCourse = await _context.StudentCourse.FindAsync(id);
-            if (studentCourse == null)
+            try
             {
-                return NotFound();
+                var result = await _studentCourseService.DeleteStudentCourse(studentDNI, courseTitle);
+                return NoContent();
             }
-
-            _context.StudentCourse.Remove(studentCourse);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool StudentCourseExists(string id)
-        {
-            return _context.StudentCourse.Any(e => e.StudentDNI == id);
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
