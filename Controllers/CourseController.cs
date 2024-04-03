@@ -8,25 +8,25 @@ namespace projectSchool.Controllers
     [ApiController]
     public class CourseController : ControllerBase
     {
-        private readonly CursoServicio _cursoServicio;
+        private readonly CourseService _CourseService;
 
-        public CourseController(CursoServicio cursoServicio)
+        public CourseController(CourseService CourseService)
         {
-            _cursoServicio = cursoServicio;
+            _CourseService = CourseService;
         }
 
         // GET: api/Course
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
         {
-            return await _cursoServicio.ObtenerTodosLosCursos();
+            return await _CourseService.ObtenerTodosLosCursos();
         }
 
         // GET: api/Course/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(string id)
         {
-            var course = await _cursoServicio.ObtenerCursoPorId(id);
+            var course = await _CourseService.ObtenerCursoPorId(id);
 
             if (course == null)
             {
@@ -40,7 +40,7 @@ namespace projectSchool.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCourse(string id, Course course)
         {
-            var result = await _cursoServicio.ActualizarCurso(id, course);
+            var result = await _CourseService.ActualizarCurso(id, course);
             if (!result)
             {
                 return BadRequest();
@@ -53,7 +53,7 @@ namespace projectSchool.Controllers
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(Course course)
         {
-            var result = await _cursoServicio.CrearCurso(course);
+            var result = await _CourseService.CrearCurso(course);
             if (!result)
             {
                 return Conflict();
@@ -66,7 +66,7 @@ namespace projectSchool.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(string id)
         {
-            var result = await _cursoServicio.EliminarCurso(id);
+            var result = await _CourseService.EliminarCurso(id);
             if (!result)
             {
                 return NotFound();

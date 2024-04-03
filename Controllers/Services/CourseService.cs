@@ -8,11 +8,11 @@ using mla.projectSchool.Models;
 
 namespace projectSchool.Services
 {
-    public class CursoServicio
+    public class CourseService
     {
         private readonly DataContext _context;
 
-        public CursoServicio(DataContext context)
+        public CourseService(DataContext context)
         {
             _context = context;
         }
