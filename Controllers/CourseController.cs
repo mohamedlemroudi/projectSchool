@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using mla.projectSchool.Data;
 using mla.projectSchool.Models;
+using projectSchool.Services;
 
 namespace projectSchool.Controllers
 {
@@ -14,25 +8,25 @@ namespace projectSchool.Controllers
     [ApiController]
     public class CourseController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly CursoServicio _cursoServicio;
 
-        public CourseController(DataContext context)
+        public CourseController(CursoServicio cursoServicio)
         {
-            _context = context;
+            _cursoServicio = cursoServicio;
         }
 
         // GET: api/Course
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
         {
-            return await _context.Course.ToListAsync();
+            return await _cursoServicio.ObtenerTodosLosCursos();
         }
 
         // GET: api/Course/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(string id)
         {
-            var course = await _context.Course.FindAsync(id);
+            var course = await _cursoServicio.ObtenerCursoPorId(id);
 
             if (course == null)
             {
@@ -43,56 +37,26 @@ namespace projectSchool.Controllers
         }
 
         // PUT: api/Course/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCourse(string id, Course course)
         {
-            if (id != course.Title)
+            var result = await _cursoServicio.ActualizarCurso(id, course);
+            if (!result)
             {
                 return BadRequest();
-            }
-
-            _context.Entry(course).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CourseExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
             }
 
             return NoContent();
         }
 
         // POST: api/Course
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(Course course)
         {
-            _context.Course.Add(course);
-            try
+            var result = await _cursoServicio.CrearCurso(course);
+            if (!result)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (CourseExists(course.Title))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                return Conflict();
             }
 
             return CreatedAtAction("GetCourse", new { id = course.Title }, course);
@@ -102,21 +66,13 @@ namespace projectSchool.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(string id)
         {
-            var course = await _context.Course.FindAsync(id);
-            if (course == null)
+            var result = await _cursoServicio.EliminarCurso(id);
+            if (!result)
             {
                 return NotFound();
             }
 
-            _context.Course.Remove(course);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool CourseExists(string id)
-        {
-            return _context.Course.Any(e => e.Title == id);
         }
     }
 }
