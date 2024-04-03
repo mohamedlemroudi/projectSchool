@@ -18,17 +18,8 @@ namespace mla.projectSchool.Data
 
             modelBuilder.Entity<StudentCourse>()
                 .HasKey(sc => new { sc.StudentDNI, sc.CourseTitle });
-
-            // modelBuilder.Entity<StudentCourse>()
-            //     .HasOne(sc => sc.Student)
-            //     .WithMany(s => s.StudentCourses)
-            //     .HasForeignKey(sc => sc.StudentDNI);
-
-            // modelBuilder.Entity<StudentCourse>()
-            //     .HasOne(sc => sc.Course)
-            //     .WithMany(c => c.StudentCourses)
-            //     .HasForeignKey(sc => sc.CourseTitle);
         }
+        
         public DbSet<Student> Student { get; set; } = default!;
         public DbSet<Course> Course { get; set; } = default!;
         public DbSet<StudentCourse> StudentCourse { get; set; } = default!;

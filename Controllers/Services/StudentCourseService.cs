@@ -31,6 +31,16 @@ namespace projectSchool.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Course>> GetCoursesByStudentDNI(string studentDNI)
+        {
+            // Consultar los cursos asociados al estudiante con el DNI especificado
+            return await _context.StudentCourse
+                .Where(sc => sc.StudentDNI == studentDNI)
+                .Select(sc => sc.Course)
+                .ToListAsync();
+        }
+
+
         public async Task<StudentCourse> GetStudentCourseById(string studentDNI, string courseTitle)
         {
             return await _context.StudentCourse.FindAsync(studentDNI, courseTitle);

@@ -59,6 +59,22 @@ namespace projectSchool.Controllers
             }
         }
 
+        // GET: api/StudentCourse/GetCoursesByStudentDNI/{studentDNI}
+        [HttpGet("GetCoursesByStudentDNI/{studentDNI}")]
+        public async Task<ActionResult<IEnumerable<Course>>> GetCoursesByStudentDNI(string studentDNI)
+        {
+            try
+            {
+                var courses = await _studentCourseService.GetCoursesByStudentDNI(studentDNI);
+                return Ok(courses);
+            }
+            catch (Exception ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
+
+
         // POST: api/StudentCourse/AddCourseToStudent
         [HttpPost("AddCourseToStudent")]
         public async Task<ActionResult<StudentCourse>> AddStudentCourse(StudentCourse studentCourse)
